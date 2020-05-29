@@ -10,18 +10,22 @@ class RecipeRepository extends BaseRecipeRepository {
   final http.Client _httpClient;
 
   RecipeRepository({http.Client httpClient})
-      : _httpClient = httpClient ?? http.Client;
+      : _httpClient = httpClient ?? http.Client();
   // if no parameter is passed in then instantiate new http client
 
   @override
-  Future<List<Result>> getRecipeList({String query, int page}) async{
-    try{
+  Future<List<Result>> getRecipeList({String query, int page}) async {
+    print('calling from repository $query');
+    try {
       final response = await _httpClient.get('$baseUrl?q=$query&p=$page');
       if (response.statusCode == 200) {
+        print('success ' + response.statusCode.toString());
         return recipeModelFromJson(response.body).results;
+      } else {
+        print('got error code ' + response.statusCode.toString());
       }
-    }catch (exp){
-
+    } catch (exp) {
+      print('got exp' + exp.toString());
     }
   }
 
