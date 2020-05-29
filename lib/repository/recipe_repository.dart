@@ -15,9 +15,10 @@ class RecipeRepository extends BaseRecipeRepository {
 
   @override
   Future<List<Result>> getRecipeList({String query, int page}) async {
-    print('calling from repository $query');
     try {
-      final response = await _httpClient.get('$baseUrl?q=$query&p=$page');
+      final url = '$baseUrl?q=$query&p=$page';
+      print(url);
+      final response = await _httpClient.get(url);
       if (response.statusCode == 200) {
         print('success ' + response.statusCode.toString());
         return recipeModelFromJson(response.body).results;

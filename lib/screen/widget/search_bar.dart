@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutterrecipeapp/repository/recipe_repository.dart';
+import 'package:flutterrecipeapp/bloc/recipe/recipe_bloc.dart';
 
-Widget SearchBar(BuildContext context, RecipeRepository repository) {
+Widget SearchBar(BuildContext context, RecipeBloc _recipeBloc) {
   final _recipeQuery = TextEditingController();
   return Container(
     padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
@@ -32,8 +32,8 @@ Widget SearchBar(BuildContext context, RecipeRepository repository) {
           ),
           onPressed: () {
             FocusScope.of(context).requestFocus(new FocusNode());
-            print('calling for qurey '+ _recipeQuery.text);
-            repository.getRecipeList(query: _recipeQuery.text, page: 0);
+            print('user enter:'+ _recipeQuery.text.trim());
+            _recipeBloc.add(SearchEvent(_recipeQuery.text.trim()));
           },
         )
       ],

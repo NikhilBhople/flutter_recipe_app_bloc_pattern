@@ -13,7 +13,8 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   // add dependency to perform your business logic (we need repository here)
   final RecipeRepository _repository;
   String query;
-  int pageNumber = 0;
+  int pageNumber = 1;
+  List<Result> recipeList = [];
 
   RecipeBloc({@required RecipeRepository repository})
       : assert(repository != null),
@@ -25,11 +26,11 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   @override
   Stream<RecipeState> mapEventToState(RecipeEvent event) async* {
     if (event is SearchEvent) {
-      _mapToSearchEvent(event);
+     yield* _mapToSearchEvent(event);
     }else if (event is RefreshEvent) {
-      _getRecipes(query, []);
+     yield*  _getRecipes(query, []);
     }else if (event is LoadMoreEvent) {
-      _getRecipes(query, event.recipe, page: pageNumber);
+     yield* _getRecipes(query, recipeList, page: pageNumber);
     }
   }
 
@@ -40,13 +41,14 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     yield* _getRecipes(event.query, []); // get recipes
   }
 
-  Stream<RecipeState> _getRecipes(String query, List<Result> results, {int page = 0}) async* {
+  Stream<RecipeState> _getRecipes(String query, List<Result> results, {int page = 1}) async* {
+    print('inside getrecipre: '+query);
     try{
-      var list = results + await _repository.getRecipeList(query: query, page: page);
+      recipeList = results + await _repository.getRecipeList(query: query, page: page);
       pageNumber++;
-      yield LoadedState(list);
+      yield LoadedState(recipe: recipeList, hasReachToEnd: results.isEmpty ? true : false);
     }catch (ex) {
-      print(ex);
+      print('inside bloc: '+ex);
       yield ErrorState();
     }
   }

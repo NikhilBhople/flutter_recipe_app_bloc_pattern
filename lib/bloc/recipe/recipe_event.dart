@@ -7,6 +7,8 @@ abstract class RecipeEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class AppStated extends RefreshEvent {}
+
 class SearchEvent extends RecipeEvent {
   final String query;
 
@@ -17,13 +19,6 @@ class SearchEvent extends RecipeEvent {
 
 class RefreshEvent extends RecipeEvent {}
 
-class LoadMoreEvent extends RecipeEvent {
-  final List<Result> recipe;
-
-  LoadMoreEvent(this.recipe);
-
-  @override
-  List<Object> get props => [recipe];
-}
+class LoadMoreEvent extends RecipeEvent {}
 
 
