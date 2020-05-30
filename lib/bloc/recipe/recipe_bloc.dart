@@ -14,7 +14,6 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
   final RecipeRepository _repository;
   String query;
   int pageNumber = 1;
-  List<Result> recipeList = [];
 
   RecipeBloc({@required RecipeRepository repository})
       : assert(repository != null),
@@ -28,28 +27,32 @@ class RecipeBloc extends Bloc<RecipeEvent, RecipeState> {
     if (event is SearchEvent) {
      yield* _mapToSearchEvent(event);
     }else if (event is RefreshEvent) {
-     yield*  _getRecipes(query, []);
+     yield*  _getRecipes(query);
     }else if (event is LoadMoreEvent) {
-     yield* _getRecipes(query, recipeList, page: pageNumber);
+     yield* _getRecipes(query, page: pageNumber);
     }
   }
 
   Stream<RecipeState> _mapToSearchEvent(SearchEvent event) async* {
+    pageNumber = 1;
     query = event.query;
     yield InitialState(); // clearing previous list
     yield LoadingState(); // showing loading indicator
-    yield* _getRecipes(event.query, []); // get recipes
+    yield* _getRecipes(event.query); // get recipes
   }
 
-  Stream<RecipeState> _getRecipes(String query, List<Result> results, {int page = 1}) async* {
-    print('inside getrecipre: '+query);
+  Stream<RecipeState> _getRecipes(String query,  {int page = 1}) async* {
+    var currentState = state;
     try{
-      recipeList = results + await _repository.getRecipeList(query: query, page: page);
+      List<Result> recipeList = await _repository.getRecipeList(query: query, page: page);
+      if (currentState is LoadedState) {
+       recipeList =  currentState.recipe + recipeList;
+      }
       pageNumber++;
-      yield LoadedState(recipe: recipeList, hasReachToEnd: results.isEmpty ? true : false);
+      yield LoadedState(recipe: recipeList, hasReachToEnd: recipeList.isEmpty ? true : false);
     }catch (ex) {
-      print('inside bloc: '+ex);
-      yield ErrorState();
+      if (page == 1) yield ErrorState();
+      else yield LoadedState(recipe: currentState is LoadedState ? currentState.recipe : [], hasReachToEnd: true);
     }
   }
 }
