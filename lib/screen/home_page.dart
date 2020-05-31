@@ -15,9 +15,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Recipe app'),
-      ),
+      backgroundColor: Color(0xfffffcee),
       body: BlocBuilder<RecipeBloc, RecipeState>(builder: (context, state) {
         // Map your state and return the widget
         return Column(

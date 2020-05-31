@@ -14,18 +14,22 @@ class RecipeListBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NotificationListener(
-      onNotification: (notificaton) => _handleScrolling(notificaton, currentState, context),
-      child: ListView.builder(
-        itemBuilder: (context, position) {
-          return position >= currentState.recipe.length
-              ? BottomLoadingIndicator()
-              : BuildRecipeSingleItem(currentState.recipe[position]);
-        },
-        itemCount: currentState.hasReachToEnd
-            ? currentState.recipe.length
-            : currentState.recipe.length + 1, // for showing bottom progress bar
-        controller: _scrollController,
+    return MediaQuery.removePadding(
+      removeTop: true,
+      context: context,
+      child: NotificationListener(
+        onNotification: (notificaton) => _handleScrolling(notificaton, currentState, context),
+        child: ListView.builder(
+          itemBuilder: (context, position) {
+            return position >= currentState.recipe.length
+                ? BottomLoadingIndicator()
+                : BuildRecipeSingleItem(currentState.recipe[position]);
+          },
+          itemCount: currentState.hasReachToEnd
+              ? currentState.recipe.length
+              : currentState.recipe.length + 1, // for showing bottom progress bar
+          controller: _scrollController,
+        ),
       ),
     );
   }

@@ -20,6 +20,7 @@ class BuildRecipeSingleItem extends StatelessWidget {
         fit: BoxFit.fitHeight,
       ),
       contentPadding: EdgeInsets.only(top: 16, left: 16, right: 16),
+      onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
     );
   }
 }

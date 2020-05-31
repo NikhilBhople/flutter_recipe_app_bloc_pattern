@@ -10,21 +10,21 @@ class SearchBar extends StatelessWidget {
     // ignore: close_sinks
     var _bloc = context.bloc<RecipeBloc>();
     return Container(
-      padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
+      padding: EdgeInsets.only(left: 16,right: 16,top: 40,bottom: 16),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30), color: Colors.grey[300]),
+          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30),bottomRight: Radius.circular(30)), color: Colors.orange[300]),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Expanded(
             child: TextFormField(
               decoration: InputDecoration(
-                  hintText: 'What you want to eat today...',
-                  labelText: 'Search Recipe',
-                  icon: Icon(Icons.fastfood)),
+                  hintText: 'What you want to eat today...',hintStyle: TextStyle(color: Colors.black),
+                  labelText: 'Search Recipe',labelStyle: TextStyle(color: Colors.black),
+                  icon: Icon(Icons.fastfood, color: Colors.black,)),
               validator: (value) {
                 if (value.isEmpty) {
-                  return 'Please enter bloc.recipe';
+                  return 'Please enter recipe';
                 }
                 return null;
               },
@@ -33,8 +33,9 @@ class SearchBar extends StatelessWidget {
           ),
           IconButton(
             icon: Icon(
-              Icons.send,
+              Icons.search,
               size: 25,
+              color: Colors.black,
             ),
             onPressed: () {
               FocusScope.of(context).requestFocus(new FocusNode());
