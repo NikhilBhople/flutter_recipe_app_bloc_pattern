@@ -15,9 +15,12 @@ dependencies:
   # A Flutter package that helps implement the BLoC pattern.
   flutter_bloc: ^4.0.0
   # Simplify Equality Comparisons
-  equatable: ^1.1.1
+  equatable: ^1.2.0
   # A composable, Future-based library for making HTTP requests.
   http: ^0.12.1
+
+  # For BLoC testing
+  bloc_test: ^5.1.0
 
 dev_dependencies:
   flutter_test:
