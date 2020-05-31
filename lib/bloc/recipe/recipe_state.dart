@@ -14,7 +14,7 @@ class LoadedState extends RecipeState {
   final List<Result> recipe;
   final bool hasReachToEnd;
 
-  LoadedState({this.recipe, this.hasReachToEnd});
+  LoadedState({@required this.recipe,@required this.hasReachToEnd});
 
   @override
   List<Object> get props => [recipe, hasReachToEnd];

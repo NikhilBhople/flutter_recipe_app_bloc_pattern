@@ -1,3 +1,5 @@
+
+import 'package:flutter/foundation.dart';
 import 'package:flutterrecipeapp/constant/app_constant.dart';
 import 'package:flutterrecipeapp/model/recipe_model.dart';
 import 'package:flutterrecipeapp/repository/base_recipe_repository.dart';
@@ -14,7 +16,7 @@ class RecipeRepository extends BaseRecipeRepository {
   // if no parameter is passed in then instantiate new http client
 
   @override
-  Future<List<Result>> getRecipeList({String query, int page}) async {
+  Future<List<Result>> getRecipeList({@required String query,@required int page}) async {
     final url = '$baseUrl?q=$query&p=$page';
     print(url);
     final response = await _httpClient.get(url);

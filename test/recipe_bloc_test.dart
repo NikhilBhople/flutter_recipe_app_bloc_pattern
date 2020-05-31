@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutterrecipeapp/bloc/recipe/recipe_bloc.dart';
 import 'package:flutterrecipeapp/model/recipe_model.dart';
@@ -8,12 +7,13 @@ import 'package:mockito/mockito.dart';
 
 import 'package:flutterrecipeapp/repository/recipe_repository.dart';
 
-class MockRecipeRepository extends MockBloc<RecipeEvent, RecipeState>
-    implements RecipeRepository {}
+class MockRecipeRepository extends Mock implements RecipeRepository {}
 
 void main() {
   const QUERY = 'banana';
   const PAGE_NUMBER = 1;
+  Result recipe =
+      Result(title: 'banana', href: '', ingredients: '', thumbnail: '');
   RecipeRepository repository;
   RecipeBloc bloc;
 
@@ -26,118 +26,155 @@ void main() {
     bloc.close();
   });
 
-  group(
-    'RecipeBloc testing',
-    () {
-      test('throw AssertionError if RecipeRepository is null', () {
-        expect(() => RecipeBloc(repository: null), throwsA(isAssertionError));
-      });
-    },
-  );
+  group('RecipeBloc testing', () {
+    test('throw AssertionError if RecipeRepository is null', () {
+      expect(() => RecipeBloc(repository: null), throwsA(isAssertionError));
+    });
 
-  //build should be used for all bloc initialization and preparation and must return the bloc under test.
-  //
-  //act is an optional callback which will be invoked with the bloc under test and should be used to add events to the bloc.
-  //
-  //expect is an Iterable<State> which the bloc under test is expected to emit after act is executed.
-
-  group('Search Event testing', () {
     test('initial state is correct', () {
       emits([InitialState(), bloc.state]);
     });
 
-    blocTest(
-      'emit [LoadingState,ErrorState] when getRecipeList throw exception',
-      build: () async {
-        when(repository.getRecipeList(query: QUERY, page: PAGE_NUMBER))
-            .thenThrow(throwsException);
-        return bloc;
-      },
-      act: (bloc) => bloc.add(SearchEvent(QUERY)),
-      expect: [LoadingState(), ErrorState()],
-    );
-
-    test('emit [LoadingState, LoadedState] when get success', () {
+    // Test cases for SearchEvent
+    test(
+        'emit [InitialState, LoadingState, ErrorState] when getRecipeList throw exc on SearchEvent',
+        () {
       when(repository.getRecipeList(query: QUERY, page: PAGE_NUMBER))
-          .thenAnswer((realInvocation) => Future.value(getDummyList()));
+          .thenThrow(throwsException);
+
+      expectLater(
+          bloc, emitsInOrder([InitialState(), LoadingState(), ErrorState()]));
+
       bloc.add(SearchEvent(QUERY));
-      var state = LoadedState(recipe: getDummyList(), hasReachToEnd: false);
-      expect([LoadingState(), state], [LoadingState(), state]);
-      emits([LoadingState(), LoadedState()]);
     });
 
     test(
-        'emit [LoadingState, LoadedState(hasReachToEnd = false)] when get empty list',
+        'emit [InitialState, LoadingState, LoadedState] when getRecipeList success on SearchEvent',
         () {
       when(repository.getRecipeList(query: QUERY, page: PAGE_NUMBER))
-          .thenAnswer((_) => Future.value(getEmptyList()));
-      var state = LoadedState(recipe: getEmptyList(), hasReachToEnd: true);
-      emits([LoadingState(), state]);
-      expect([LoadingState(), state], [LoadingState(), state]);
-    });
-  });
+          .thenAnswer((realInvocation) => Future.value([recipe]));
 
-  group('Refresh Event Testing', () {
-    test('emit [ErrorState] when no query string is present', () async {
-      when(repository.getRecipeList(query: QUERY, page: PAGE_NUMBER))
-          .thenThrow(throwsException);
-      bloc.add(RefreshEvent());
+      expectLater(
+          bloc,
+          emitsInOrder([
+            InitialState(),
+            LoadingState(),
+            LoadedState(recipe: [recipe], hasReachToEnd: false)
+          ]));
 
-      emits([ErrorState()]);
+      bloc.add(SearchEvent(QUERY));
     });
 
-    test('emit [ErrorState] when get exception from getRecipeList', () async {
+    test(
+        'emit [InitialState, LoadingState, LoadedState] when getRecipeList success but empty list on SearchEvent',
+        () {
+      when(repository.getRecipeList(query: QUERY, page: PAGE_NUMBER))
+          .thenAnswer((realInvocation) => Future.value([]));
+
+      expectLater(
+          bloc,
+          emitsInOrder([
+            InitialState(),
+            LoadingState(),
+            LoadedState(recipe: [], hasReachToEnd: true)
+          ]));
+
+      bloc.add(SearchEvent(QUERY));
+    });
+
+    // LoadMoreEvent test cases
+    test(
+        'emit [InitialState, LoadedState] on getRecipeList Success on LoadMoreEvent',
+        () {
+      bloc.query = QUERY;
+      when(repository.getRecipeList(query: QUERY, page: 1))
+          .thenAnswer((_) => Future.value([recipe]));
+
+      expectLater(
+          bloc,
+          emitsInOrder([
+            InitialState(),
+            LoadedState(recipe: [recipe], hasReachToEnd: false)
+          ]));
+
+      bloc.add(LoadMoreEvent());
+    });
+
+    test(
+        'emit [InitialState, LoadedState] on getRecipeList Success but empty list on LoadMoreEvent',
+        () {
+      bloc.query = QUERY;
+      when(repository.getRecipeList(query: QUERY, page: 1))
+          .thenAnswer((_) => Future.value([]));
+
+      expectLater(
+          bloc,
+          emitsInOrder(
+              [InitialState(), LoadedState(recipe: [], hasReachToEnd: true)]));
+
+      bloc.add(LoadMoreEvent());
+    });
+
+    test(
+        'emit [InitialState, ErrorState] on getRecipeList throw error LoadMoreEvent',
+        () {
+      bloc.query = QUERY;
+      when(repository.getRecipeList(query: QUERY, page: 1))
+          .thenThrow(throwsException);
+
+      expectLater(bloc, emitsInOrder([InitialState(), ErrorState()]));
+
+      bloc.add(LoadMoreEvent());
+    });
+
+    // RefreshEvent test cases
+    test(
+        'emit [InitialState,ErrorState] when no query string is present for RefreshEvent',
+        () async {
       when(repository.getRecipeList(query: QUERY, page: PAGE_NUMBER))
           .thenThrow(throwsException);
-      bloc.query = 'banana';
-      bloc.add(RefreshEvent());
 
-      emits([ErrorState()]);
+      expectLater(bloc, emitsInOrder([InitialState(), ErrorState()]));
+
+      bloc.add(RefreshEvent());
     });
 
     test('emit [LoadedState] when get success response from getRecipeList',
         () async {
       when(repository.getRecipeList(query: QUERY, page: PAGE_NUMBER))
-          .thenAnswer((_) => Future.value(getDummyList()));
+          .thenAnswer((_) => Future.value([recipe]));
       bloc.query = 'banana';
+
+      expectLater(
+          bloc,
+          emitsInOrder([
+            InitialState(),
+            LoadedState(recipe: [recipe], hasReachToEnd: false)
+          ]));
+
       bloc.add(RefreshEvent());
-
-      emits([LoadedState()]);
     });
-  });
 
-  group('LoadMoreEvent testing', () {
+    // calling SearchEvent AND LoadMoreEvent
     test(
-        'emit [LoadedState[previoslist, hasReachToEnd= true]] when get exception for load more',
-        () async {
-      bloc.pageNumber = 2;
-      bloc.query = QUERY;
+        'emit [InitialState, LoadingState, LoadedState, LoadedState] on getting success for SearchEvent and LoadMoreEvent',
+        () {
+      when(repository.getRecipeList(query: QUERY, page: PAGE_NUMBER))
+          .thenAnswer((realInvocation) => Future.value([recipe]));
       when(repository.getRecipeList(query: QUERY, page: 2))
-          .thenThrow(throwsException);
-      var loadedState = LoadedState(recipe: [], hasReachToEnd: true);
-      bloc.add(LoadMoreEvent());
-      emits([LoadingState()]);
-      expect([loadedState], [loadedState]);
-    });
+          .thenAnswer((realInvocation) => Future.value([recipe]));
 
-    test('emit [LoadedState()] when get success', () async {
-      bloc.pageNumber = 2;
-      bloc.query = QUERY;
-      when(repository.getRecipeList(query: QUERY, page: 2))
-          .thenAnswer((_) => Future.value(getDummyList()));
+      expectLater(
+          bloc,
+          emitsInOrder([
+            InitialState(),
+            LoadingState(),
+            LoadedState(recipe: [recipe], hasReachToEnd: false),
+            LoadedState(recipe: [recipe, recipe], hasReachToEnd: false)
+          ]));
+
+      bloc.add(SearchEvent(QUERY));
       bloc.add(LoadMoreEvent());
-      emits([LoadingState()]);
-      expect([LoadedState()], [LoadedState()]);
     });
   });
-}
-
-FutureOr<List<Result>> getEmptyList() {
-  return [];
-}
-
-List<Result> getDummyList() {
-  Result result = Result(
-      title: 'banana', href: 'sdfd', ingredients: 'sdfdf', thumbnail: 'sdfdf');
-  return [result, result, result, result];
 }

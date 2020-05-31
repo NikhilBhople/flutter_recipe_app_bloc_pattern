@@ -18,9 +18,7 @@ dependencies:
   equatable: ^1.2.0
   # A composable, Future-based library for making HTTP requests.
   http: ^0.12.1
-
-  # For BLoC testing
-  bloc_test: ^5.1.0
+  mockito: ^4.1.1
 
 dev_dependencies:
   flutter_test:
